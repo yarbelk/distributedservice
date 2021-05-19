@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package protostuff;
+
+option go_package = "gitlab.com/yarbelk/grpcstuff/protostuff";
+
+service ProtoStuff {
+  rpc StreamEventLog(Player) returns (stream PlayerEventLog) {};
+}
+
+message Player {
+  int32 id = 1;
+}
+
+message PlayerEventLog {
+  int64 sequenceId = 1;
+  VectorTimestamp timestamp = 2;
+  Action action = 3;
+}
+
+// VectorClock is more or less a placeholder: implementation is
+message VectorTimestamp {
+  repeated int64 timestamps = 1;
+}
+
+message Action {
+  string action = 1;
+  bytes payload = 2;
+}
