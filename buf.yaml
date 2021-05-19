@@ -1,0 +1,14 @@
+version: v1beta1
+# this name works probably because its all in beta
+name: buf.build/myuser/myrepo
+build:
+  roots:
+    - protostuff
+lint:
+  use:
+    - DEFAULT
+breaking:
+  use:
+    - FILE
+deps:
+  - buf.build/beta/googleapis

@@ -4,8 +4,14 @@ package protostuff;
 
 option go_package = "github.com/yarbelk/grpcstuff/protostuff";
 
+import "google/api/annotations.proto";
+
 service ProtoStuff {
-  rpc StreamEventLog(Player) returns (stream PlayerEventLog) {};
+  rpc StreamEventLog(Player) returns (stream PlayerEventLog) {
+    option (google.api.http) = {
+      get: "/v1/StreamEventLog"
+    };
+  };
 }
 
 message Player {
