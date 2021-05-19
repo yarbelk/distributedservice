@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package protostuff;
 
-option go_package = "gitlab.com/yarbelk/grpcstuff/protostuff";
+option go_package = "github.com/yarbelk/grpcstuff/protostuff";
 
 service ProtoStuff {
   rpc StreamEventLog(Player) returns (stream PlayerEventLog) {};

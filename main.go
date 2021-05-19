@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"gitlab.com/yarbelk/grpcstuff/protostuff"
+	"github.com/yarbelk/grpcstuff/protostuff"
 )
 
 type ProtoStuffs struct {
