@@ -133,7 +133,77 @@ func TestBadgerImplementationBasics(t *testing.T) {
 		}
 
 	})
-	t.Run("Apply gets back expected actions", func(t *testing.T) {
+	t.Run("Get Customer gets back expected state", func(t *testing.T) {
+		t.Run("Sanity check for TDD", func(t *testing.T) {
+			dir, err := os.MkdirTemp("/tmp", "badger_store_test_*.db")
+			if err != nil {
+				t.Fatalf("cant create test db file %+v", err)
+			}
+			defer os.RemoveAll(dir)
+			ds := data.New(dir)
+			defer ds.Close()
 
+			table := []struct {
+				name          string
+				input         []*proto.CustomerEventLog
+				expectedState string
+				expectedSID   uint64
+			}{
+				{
+					name: "Single Entry sanity",
+					input: []*proto.CustomerEventLog{
+						&proto.CustomerEventLog{
+							SequenceId: 0,
+							Timestamp:  &proto.VectorTimestamp{Timestamps: []int64{1}},
+							Action:     &proto.Action{Action: "Create First Record"},
+						},
+					},
+					expectedState: "Create First Record",
+					expectedSID:   0,
+				}, {
+					name: "Updates with two",
+					input: []*proto.CustomerEventLog{
+						&proto.CustomerEventLog{
+							SequenceId: 0,
+							Timestamp:  &proto.VectorTimestamp{Timestamps: []int64{1}},
+							Action:     &proto.Action{Action: "Create First record"},
+						},
+						&proto.CustomerEventLog{
+							SequenceId: 1,
+							Timestamp:  &proto.VectorTimestamp{Timestamps: []int64{1}},
+							Action:     &proto.Action{Action: "Updated Second"},
+						},
+					},
+					expectedState: "Updated Second",
+					expectedSID:   1,
+				},
+			}
+			for _, tt := range table {
+				var err error
+				t.Run(tt.name, func(t *testing.T) {
+					ds.LogDB.DropAll()
+
+					for _, in := range tt.input {
+						err = ds.WriteLog(1, in)
+						if err != nil {
+							if err != nil {
+								t.Fatalf("can't setup customer for %+v", err)
+							}
+						}
+					}
+					customer, err := ds.GetCustomerState(1)
+					if err != nil {
+						t.Fatalf("can't get customer %+v", err)
+					}
+					if customer.LastAction != tt.expectedState {
+
+						t.Fatalf("expected state %s got %s", tt.expectedState, customer.LastAction)
+					}
+					if customer.CurrentSequence != tt.expectedSID {
+						t.Fatalf("expected SID %d got %d", tt.expectedSID, customer.CurrentSequence)
+					}
+				})
+			}
+		})
 	})
 }

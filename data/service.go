@@ -16,7 +16,7 @@ import (
 // also - super basic example
 type CustomerState struct {
 	LastAction      string
-	CurrentSequence int64
+	CurrentSequence uint64
 }
 
 type Error string
@@ -36,7 +36,7 @@ const (
 // event sourced Customer view
 func (cs *CustomerState) Apply(l *proto.CustomerEventLog) {
 	cs.LastAction = l.GetAction().GetAction() // fun semantics of protobuf
-	cs.CurrentSequence++                      // should actually be validating the timestamp and prior sequences etc. but this is PoC
+	cs.CurrentSequence = l.SequenceId         // should actually be validating the timestamp and prior sequences etc. but this is PoC
 }
 
 type Storer interface {
