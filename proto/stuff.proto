@@ -10,11 +10,32 @@ service ProtoStuff {
 }
 
 message Customer {
-  int64 id = 1;
+  uint64 id = 1;
 }
 
+
+
+// CustomerEventLog: 
+// Another simplificaiton is in the keying/logging system.  we are completly skipping
+// good design of the logging format: which should have a standardized way of looking up
+// and versioning logs.  Typically i'd do something like
+// 
+// message LogMeta {
+//   string EventType = 1;
+//   int64 EventVersion = 2;
+//   uint64 sequenceId = 3;
+//   VectorTimestamp eventTimestamp = 4;
+//   // a bunch of metadat
+//   Any EventPayload = 10;  // or byte, or anything.
+// }
+// in this way; you can have many versions of the same EventName that cleanly apply
+// and its discoverable in a fast to deserialize way.  the meta data is moved
+// out of the 'XEventLog' message.
+// I'm not doing this because, while not hard to do, its too much effort for a
+// PoC; but I think its important to understand that as implemented: this is
+// _not_ a futureproof design.  Or a scalable design.
 message CustomerEventLog {
-  int64 sequenceId = 1;
+  uint64 sequenceId = 1;
   VectorTimestamp timestamp = 2;
   Action action = 3;
 }
