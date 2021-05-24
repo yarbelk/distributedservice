@@ -3,7 +3,7 @@ version: v1beta1
 name: buf.build/myuser/myrepo
 build:
   roots:
-    - protostuff
+    - proto
 lint:
   use:
     - DEFAULT

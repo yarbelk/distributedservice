@@ -1,11 +1,11 @@
 version: v1beta1
 plugins:
   - name: go
-    out: protostuff
+    out: proto
     opt: paths=source_relative
   - name: go-grpc
-    out: protostuff
+    out: proto
     opt: paths=source_relative
   - name: grpc-gateway
-    out: protostuff
+    out: proto
     opt: paths=source_relative

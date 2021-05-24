@@ -10,24 +10,24 @@ import (
 	"time"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/yarbelk/grpcstuff/protostuff"
+	"github.com/yarbelk/grpcstuff/proto"
 	"google.golang.org/grpc"
 )
 
 type ProtoStuffs struct {
 	LastAction string
 	Clock      time.Time
-	log        []*protostuff.PlayerEventLog
-	protostuff.UnimplementedProtoStuffServer
+	log        []*proto.CustomerEventLog
+	proto.UnimplementedProtoStuffServer
 }
 
-func (ps *ProtoStuffs) StreamEventLog(in *protostuff.Player, s protostuff.ProtoStuff_StreamEventLogServer) error {
+func (ps *ProtoStuffs) StreamEventLog(in *proto.Customer, s proto.ProtoStuff_StreamEventLogServer) error {
 	for i := 0; true; i++ {
 		<-time.After(1 * time.Second)
-		s.Send(&protostuff.PlayerEventLog{
+		s.Send(&proto.CustomerEventLog{
 			SequenceId: int64(i),
-			Timestamp:  &protostuff.VectorTimestamp{Timestamps: []int64{time.Now().Unix()}},
-			Action:     &protostuff.Action{Action: fmt.Sprintf("Action %d", i)},
+			Timestamp:  &proto.VectorTimestamp{Timestamps: []int64{time.Now().Unix()}},
+			Action:     &proto.Action{Action: fmt.Sprintf("Action %d", i)},
 		})
 		i++
 	}
@@ -44,7 +44,7 @@ func main() {
 	var opts []grpc.ServerOption
 	grpcServer := grpc.NewServer(opts...)
 
-	protostuff.RegisterProtoStuffServer(grpcServer, &ProtoStuffs{log: make([]*protostuff.PlayerEventLog, 0)})
+	proto.RegisterProtoStuffServer(grpcServer, &ProtoStuffs{log: make([]*proto.CustomerEventLog, 0)})
 
 	go func() {
 		log.Fatalln(grpcServer.Serve(lis))
@@ -63,7 +63,7 @@ func main() {
 
 	gwmux := runtime.NewServeMux()
 
-	err = protostuff.RegisterProtoStuffHandler(context.Background(), gwmux, conn)
+	err = proto.RegisterProtoStuffHandler(context.Background(), gwmux, conn)
 	if err != nil {
 		panic(err)
 	}
