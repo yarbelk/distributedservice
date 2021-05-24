@@ -4,6 +4,7 @@ package proto
 
 import (
 	context "context"
+
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -19,7 +20,8 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ProtoStuffClient interface {
 	StreamEventLog(ctx context.Context, in *Customer, opts ...grpc.CallOption) (ProtoStuff_StreamEventLogClient, error)
-	CustomerState(ctx context.Context, in *Customer, opts ...grpc.CallOption) (*CustomerEventLog, error)
+	CustomerState(ctx context.Context, in *Customer, opts ...grpc.CallOption) (*CustomerState, error)
+	WriteLog(ctx context.Context, in *NewCustomerLog, opts ...grpc.CallOption) (*ErrorDetails, error)
 }
 
 type protoStuffClient struct {
@@ -62,9 +64,18 @@ func (x *protoStuffStreamEventLogClient) Recv() (*CustomerEventLog, error) {
 	return m, nil
 }
 
-func (c *protoStuffClient) CustomerState(ctx context.Context, in *Customer, opts ...grpc.CallOption) (*CustomerEventLog, error) {
-	out := new(CustomerEventLog)
+func (c *protoStuffClient) CustomerState(ctx context.Context, in *Customer, opts ...grpc.CallOption) (*CustomerState, error) {
+	out := new(CustomerState)
 	err := c.cc.Invoke(ctx, "/proto.ProtoStuff/CustomerState", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *protoStuffClient) WriteLog(ctx context.Context, in *NewCustomerLog, opts ...grpc.CallOption) (*ErrorDetails, error) {
+	out := new(ErrorDetails)
+	err := c.cc.Invoke(ctx, "/proto.ProtoStuff/WriteLog", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +87,8 @@ func (c *protoStuffClient) CustomerState(ctx context.Context, in *Customer, opts
 // for forward compatibility
 type ProtoStuffServer interface {
 	StreamEventLog(*Customer, ProtoStuff_StreamEventLogServer) error
-	CustomerState(context.Context, *Customer) (*CustomerEventLog, error)
+	CustomerState(context.Context, *Customer) (*CustomerState, error)
+	WriteLog(context.Context, *NewCustomerLog) (*ErrorDetails, error)
 	mustEmbedUnimplementedProtoStuffServer()
 }
 
@@ -87,8 +99,11 @@ type UnimplementedProtoStuffServer struct {
 func (UnimplementedProtoStuffServer) StreamEventLog(*Customer, ProtoStuff_StreamEventLogServer) error {
 	return status.Errorf(codes.Unimplemented, "method StreamEventLog not implemented")
 }
-func (UnimplementedProtoStuffServer) CustomerState(context.Context, *Customer) (*CustomerEventLog, error) {
+func (UnimplementedProtoStuffServer) CustomerState(context.Context, *Customer) (*CustomerState, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CustomerState not implemented")
+}
+func (UnimplementedProtoStuffServer) WriteLog(context.Context, *NewCustomerLog) (*ErrorDetails, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method WriteLog not implemented")
 }
 func (UnimplementedProtoStuffServer) mustEmbedUnimplementedProtoStuffServer() {}
 
@@ -142,6 +157,24 @@ func _ProtoStuff_CustomerState_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ProtoStuff_WriteLog_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(NewCustomerLog)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProtoStuffServer).WriteLog(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.ProtoStuff/WriteLog",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProtoStuffServer).WriteLog(ctx, req.(*NewCustomerLog))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ProtoStuff_ServiceDesc is the grpc.ServiceDesc for ProtoStuff service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -152,6 +185,10 @@ var ProtoStuff_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CustomerState",
 			Handler:    _ProtoStuff_CustomerState_Handler,
+		},
+		{
+			MethodName: "WriteLog",
+			Handler:    _ProtoStuff_WriteLog_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

@@ -6,14 +6,30 @@ option go_package = "github.com/yarbelk/grpcstuff/proto";
 
 service ProtoStuff {
   rpc StreamEventLog(Customer) returns (stream CustomerEventLog) {};
-  rpc CustomerState(Customer) returns (CustomerEventLog) {};
+  rpc CustomerState(Customer) returns (CustomerState) {};
+  rpc WriteLog(NewCustomerLog) returns (ErrorDetails) {};
 }
 
 message Customer {
   uint64 id = 1;
 }
 
+message CustomerState {
+  uint64 id = 1;
+  string LastAction = 2;
+  uint64 currentSequence = 3;
+}
 
+message ErrorDetails {
+  bool failed = 1;
+  uint64 errorCode = 2;
+  string errorMsg = 3;
+}
+
+message NewCustomerLog {
+  uint64 customerID = 1;
+  CustomerEventLog log = 2;
+}
 
 // CustomerEventLog: 
 // Another simplificaiton is in the keying/logging system.  we are completly skipping

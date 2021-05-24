@@ -41,7 +41,7 @@ func (cs *CustomerState) Apply(l *proto.CustomerEventLog) {
 
 type Storer interface {
 	GetCustomerState(id uint64) (CustomerState, error)
-	WriteLog(id uint64, el proto.CustomerEventLog) error
+	WriteLog(id uint64, el *proto.CustomerEventLog) error
 }
 
 // BadgerStore is a fast DB key value store that lets you very quickly iterate over keys in lexagraphical order
@@ -71,7 +71,7 @@ func New(path string) *BadgerStore {
 }
 
 // GetCustomerState to get a root for the customer.  totally could use snapshots etc
-func (b *BadgerStore) GetCustomerState(id int64) (CustomerState, error) {
+func (b *BadgerStore) GetCustomerState(id uint64) (CustomerState, error) {
 	cs := new(CustomerState)
 	prefix := []byte(fmt.Sprintf("%d:", id))
 	err := b.LogDB.View(func(txn *badger.Txn) error {

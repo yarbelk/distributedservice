@@ -3,8 +3,11 @@ module github.com/yarbelk/grpcstuff
 go 1.16
 
 require (
+	github.com/buraksezer/consistent v0.9.0
+	github.com/cespare/xxhash v1.1.0
 	github.com/dgraph-io/badger v1.6.2
 	github.com/golang/protobuf v1.5.2
+	github.com/hashicorp/memberlist v0.2.4
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/stretchr/testify v1.7.0 // indirect
 	golang.org/x/net v0.0.0-20210510120150-4163338589ed // indirect
