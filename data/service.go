@@ -129,13 +129,15 @@ func (b *BadgerStore) GetCustomerState(id uint64) (CustomerState, error) {
 func (b *BadgerStore) WriteLog(id uint64, el *proto.CustomerEventLog) error {
 	err := b.LogDB.Update(func(txn *badger.Txn) error {
 		if !validSequenceID(id, el.SequenceId, txn) {
+			fmt.Printf("id, el: %d, %+v\n", id, el)
 			return InvalidSequenceError
 		}
 		v, err := protobuf.Marshal(el)
 		if err != nil {
 			return err
 		}
-		txn.Set([]byte(fmt.Sprintf("%d:%d", id, el.SequenceId)), v)
+		//
+		txn.Set([]byte(fmt.Sprintf("%d:%021d", id, el.SequenceId)), v)
 		return nil
 	})
 	return err

@@ -2,7 +2,7 @@ package data_test
 
 import (
 	"fmt"
-	"os"
+	"math/rand"
 	"path/filepath"
 	"reflect"
 	"runtime"
@@ -33,11 +33,7 @@ func GetKeyList(b *data.BadgerStore, id uint64) ([]string, error) {
 
 func TestBadgerImplementationBasics(t *testing.T) {
 	t.Run("Write appends with correct sequences", func(t *testing.T) {
-		dir, err := os.MkdirTemp("/tmp", "badger_store_test_*.db")
-		if err != nil {
-			t.Fatalf("cant create test db file %+v", err)
-		}
-		defer os.RemoveAll(dir)
+		dir := t.TempDir()
 		ds := data.New(dir)
 		defer ds.Close()
 		el1 := proto.CustomerEventLog{
@@ -56,18 +52,16 @@ func TestBadgerImplementationBasics(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if !reflect.DeepEqual([]string{"1:0", "1:1"}, keys) {
+		// ordering ftw - mat.MaxUint64.  this should be done programatically but...
+		if !reflect.DeepEqual([]string{"1:000000000000000000000", "1:000000000000000000001"}, keys) {
 			_, file, line, _ := runtime.Caller(0)
-			fmt.Printf("%s:%d:\n\n\texp: %#v\n\n\tgot: %#v\n\n", filepath.Base(file), line, []string{"1:0", "1:1"}, keys)
+
+			t.Logf("%s:%d:\n\n\texp: %#v\n\n\tgot: %#v\n\n", filepath.Base(file), line, []string{"1:000000000000000000000", "1:000000000000000000001"}, keys)
 			t.FailNow()
 		}
 	})
 	t.Run("Write returns error on incorrect sequenceId", func(t *testing.T) {
-		dir, err := os.MkdirTemp("/tmp", "badger_store_test_*.db")
-		if err != nil {
-			t.Fatalf("cant create test db file %+v", err)
-		}
-		defer os.RemoveAll(dir)
+		dir := t.TempDir()
 		ds := data.New(dir)
 		defer ds.Close()
 		table := []struct {
@@ -135,11 +129,7 @@ func TestBadgerImplementationBasics(t *testing.T) {
 	})
 	t.Run("Get Customer gets back expected state", func(t *testing.T) {
 		t.Run("Sanity check for TDD", func(t *testing.T) {
-			dir, err := os.MkdirTemp("/tmp", "badger_store_test_*.db")
-			if err != nil {
-				t.Fatalf("cant create test db file %+v", err)
-			}
-			defer os.RemoveAll(dir)
+			dir := t.TempDir()
 			ds := data.New(dir)
 			defer ds.Close()
 
@@ -176,6 +166,72 @@ func TestBadgerImplementationBasics(t *testing.T) {
 					},
 					expectedState: "Updated Second",
 					expectedSID:   1,
+				}, {
+					name: "updates with 11 (lexagraphical sorting)",
+					input: []*proto.CustomerEventLog{
+						&proto.CustomerEventLog{
+							SequenceId: 0,
+							Timestamp:  &proto.VectorTimestamp{Timestamps: []int64{1}},
+							Action:     &proto.Action{Action: "Create First record"},
+						},
+						&proto.CustomerEventLog{
+							SequenceId: 1,
+							Timestamp:  &proto.VectorTimestamp{Timestamps: []int64{1}},
+							Action:     &proto.Action{Action: "logdata"},
+						},
+						&proto.CustomerEventLog{
+							SequenceId: 2,
+							Timestamp:  &proto.VectorTimestamp{Timestamps: []int64{1}},
+							Action:     &proto.Action{Action: "logdata"},
+						},
+						&proto.CustomerEventLog{
+							SequenceId: 3,
+							Timestamp:  &proto.VectorTimestamp{Timestamps: []int64{1}},
+							Action:     &proto.Action{Action: "logdata"},
+						},
+						&proto.CustomerEventLog{
+							SequenceId: 4,
+							Timestamp:  &proto.VectorTimestamp{Timestamps: []int64{1}},
+							Action:     &proto.Action{Action: "logdata"},
+						},
+						&proto.CustomerEventLog{
+							SequenceId: 5,
+							Timestamp:  &proto.VectorTimestamp{Timestamps: []int64{1}},
+							Action:     &proto.Action{Action: "logdata"},
+						},
+						&proto.CustomerEventLog{
+							SequenceId: 6,
+							Timestamp:  &proto.VectorTimestamp{Timestamps: []int64{1}},
+							Action:     &proto.Action{Action: "logdata"},
+						},
+						&proto.CustomerEventLog{
+							SequenceId: 7,
+							Timestamp:  &proto.VectorTimestamp{Timestamps: []int64{1}},
+							Action:     &proto.Action{Action: "logdata"},
+						},
+						&proto.CustomerEventLog{
+							SequenceId: 8,
+							Timestamp:  &proto.VectorTimestamp{Timestamps: []int64{1}},
+							Action:     &proto.Action{Action: "logdata"},
+						},
+						&proto.CustomerEventLog{
+							SequenceId: 9,
+							Timestamp:  &proto.VectorTimestamp{Timestamps: []int64{1}},
+							Action:     &proto.Action{Action: "logdata"},
+						},
+						&proto.CustomerEventLog{
+							SequenceId: 10,
+							Timestamp:  &proto.VectorTimestamp{Timestamps: []int64{1}},
+							Action:     &proto.Action{Action: "logdata"},
+						},
+						&proto.CustomerEventLog{
+							SequenceId: 11,
+							Timestamp:  &proto.VectorTimestamp{Timestamps: []int64{1}},
+							Action:     &proto.Action{Action: "Updated Last"},
+						},
+					},
+					expectedState: "Updated Last",
+					expectedSID:   11,
 				},
 			}
 			for _, tt := range table {
@@ -205,5 +261,91 @@ func TestBadgerImplementationBasics(t *testing.T) {
 				})
 			}
 		})
+	})
+}
+
+func BenchmarkLookupSpeed(b *testing.B) {
+	// or: fun explorations in typecasting int types to get random data sets.
+
+	users := 10000
+	// Test performance of datastore
+	dir := b.TempDir()
+	ds := data.New(dir)
+	defer ds.Close()
+	var i uint64
+	for i = 0; i < uint64(users); i++ {
+		// this is safe because Int63n will panic on negative inputs, and is always positive
+		var j int64
+		for j = 0; int64(j) <= rand.Int63n(200); j++ {
+			b.Log(i, j)
+			el := &proto.CustomerEventLog{
+				SequenceId: uint64(j),
+				Timestamp: &proto.VectorTimestamp{
+					Timestamps: []int64{j},
+				},
+				Action: &proto.Action{Action: "test it"},
+			}
+			err := ds.WriteLog(i, el)
+			if err != nil {
+				b.Fatal(el, err)
+			}
+		}
+	}
+	b.Run("Test 10 random lookups", func(b *testing.B) {
+		// change lookups to mess with caching - worst case
+		lookups := make([]uint64, 0, 10)
+		for i = 0; i < 10; i++ {
+			lookups = append(lookups, uint64(rand.Int63n(int64(users))))
+		}
+		b.ResetTimer()
+		for _, id := range lookups {
+			cs, err := ds.GetCustomerState(id)
+			if err != nil {
+				b.Log(err)
+				b.Fail()
+			}
+			if cs.LastAction != "test it" {
+				b.Logf("%+v\n", cs)
+				b.Fail()
+			}
+		}
+	})
+	b.Run("Test 1000 random lookups", func(b *testing.B) {
+		// change lookups to mess with caching - worst case
+		lookups := make([]uint64, 0, 1000)
+		for i = 0; i < 1000; i++ {
+			lookups = append(lookups, uint64(rand.Int63n(int64(users))))
+		}
+		b.ResetTimer()
+		for _, id := range lookups {
+			cs, err := ds.GetCustomerState(id)
+			if err != nil {
+				b.Log(err)
+				b.Fail()
+			}
+			if cs.LastAction != "test it" {
+				b.Logf("%+v\n", cs)
+				b.Fail()
+			}
+		}
+	})
+	b.Run("Test 5000 random lookups", func(b *testing.B) {
+		// change lookups to mess with caching - worst case
+		lookups := make([]uint64, 0, 5000)
+		for i = 0; i < 5000; i++ {
+			lookups = append(lookups, uint64(rand.Int63n(int64(users))))
+		}
+		b.ResetTimer()
+		for _, id := range lookups {
+			cs, err := ds.GetCustomerState(id)
+			if err != nil {
+				b.Log(err)
+				b.Fail()
+			}
+			if cs.LastAction != "test it" {
+				b.Logf("%+v\n", cs)
+				b.Fail()
+			}
+		}
 	})
 }
