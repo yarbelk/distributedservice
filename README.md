@@ -68,3 +68,6 @@ BenchmarkLookupSpeed/Test_5000_random_lookups-8         1000000000              
 ## Whats completly missing
 
 I would add a managment layer to this; i made an approximation of the protobuf, but didn't implement it
+This could also be doen through the gossip protocol, or in other ways.  At the minimun - its nice to
+have an easy way to get the member list via a call; though you could also get that from your service
+managment layer or in any number of other ways
