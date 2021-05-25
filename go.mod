@@ -1,4 +1,4 @@
-module github.com/yarbelk/grpcstuff
+module github.com/yarbelk/distributedservice
 
 go 1.16
 

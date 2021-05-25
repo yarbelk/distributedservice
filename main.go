@@ -10,9 +10,9 @@ import (
 	"github.com/buraksezer/consistent"
 	"github.com/cespare/xxhash"
 	"github.com/hashicorp/memberlist"
-	"github.com/yarbelk/grpcstuff/data"
-	"github.com/yarbelk/grpcstuff/proto"
-	"github.com/yarbelk/grpcstuff/service"
+	"github.com/yarbelk/distributedservice/data"
+	"github.com/yarbelk/distributedservice/proto"
+	"github.com/yarbelk/distributedservice/service"
 	"google.golang.org/grpc"
 )
 

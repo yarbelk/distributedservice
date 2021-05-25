@@ -8,7 +8,7 @@ import (
 
 	"github.com/dgraph-io/badger"
 	protobuf "github.com/golang/protobuf/proto"
-	"github.com/yarbelk/grpcstuff/proto"
+	"github.com/yarbelk/distributedservice/proto"
 )
 
 // CustomerState is an aggregate root - need to move it to its own package

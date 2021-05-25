@@ -8,8 +8,8 @@ import (
 
 	"github.com/buraksezer/consistent"
 	"github.com/hashicorp/memberlist"
-	"github.com/yarbelk/grpcstuff/data"
-	"github.com/yarbelk/grpcstuff/proto"
+	"github.com/yarbelk/distributedservice/data"
+	"github.com/yarbelk/distributedservice/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

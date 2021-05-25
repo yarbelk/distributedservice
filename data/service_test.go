@@ -9,8 +9,8 @@ import (
 	"testing"
 
 	"github.com/dgraph-io/badger"
-	"github.com/yarbelk/grpcstuff/data"
-	"github.com/yarbelk/grpcstuff/proto"
+	"github.com/yarbelk/distributedservice/data"
+	"github.com/yarbelk/distributedservice/proto"
 )
 
 func GetKeyList(b *data.BadgerStore, id uint64) ([]string, error) {

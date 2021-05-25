@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/yarbelk/grpcstuff/data"
-	"github.com/yarbelk/grpcstuff/proto"
-	"github.com/yarbelk/grpcstuff/service"
+	"github.com/yarbelk/distributedservice/data"
+	"github.com/yarbelk/distributedservice/proto"
+	"github.com/yarbelk/distributedservice/service"
 )
 
 // MockStorer because we are not trying to test the Storer; do that in that package.
