@@ -46,6 +46,25 @@ engine.  this way you still get to take advantage of a denser keyspace for cache
 and you don't need to do all the crazy self managment.
 
 
-## other thoughts.
+## benchmarks
+
+running 1,000,000,000 itterations of reading N randomly selected keys gives the following performance.
+This is just the datastore.  Compaired to the issues we had with BigTable; where this was anywhere from 5ms to 10sec
+its pretty good at ~0.00006ns per customer lookup=> read all log rows and apply to the root aggregate, no
+snapshotting.
 
 
+```
+goos: linux
+goarch: amd64
+pkg: github.com/yarbelk/distributedservice/data
+cpu: Intel(R) Core(TM) i7-7700K CPU @ 4.20GHz
+BenchmarkLookupSpeed/Test_10_random_lookups-8           1000000000               0.0006971 ns/op
+BenchmarkLookupSpeed/Test_1000_random_lookups-8         1000000000               0.08170 ns/op
+BenchmarkLookupSpeed/Test_5000_random_lookups-8         1000000000               0.4127 ns/op
+```
+
+
+## Whats completly missing
+
+I would add a managment layer to this; i made an approximation of the protobuf, but didn't implement it

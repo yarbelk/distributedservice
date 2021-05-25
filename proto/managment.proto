@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "github.com/yarbelk/grpcstuff/proto";
+
+import "google/protobuf/empty.proto";
+
+service ClusterManagment {
+  rpc MembershipChanges(google.protobuf.Empty) returns (stream MembershipChange) {};
+  rpc MembershipList(google.protobuf.Empty) returns (Membership);
+}
+
+
+// MembershipChange is an event;  it should have more metadata (see stuff.proto for that discussion)
+// this is more 'here is an idea'
+message MembershipChange {
+  enum EventType {
+    ADDED = 0;
+    LOST = 1;
+    REJOINED = 2;
+    LEFT = 3;
+  }
+  EventType event_type = 1;
+  Member member = 2;
+}
+
+// Membership is just  a list of members
+message Membership {
+  repeated Member memberlist = 1;
+}
+
+message Member{
+  string Name = 1;
+  string Address = 2;
+  string Port = 3;
+}
